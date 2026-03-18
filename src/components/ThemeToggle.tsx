@@ -3,27 +3,25 @@ import { Pressable, Text, StyleSheet } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { ThemeToggleProps } from '../types/props';
 
-const ThemeToggle: React.FC<ThemeToggleProps> = ({ size = 36 }) => {
+const ThemeToggle: React.FC<ThemeToggleProps> = ({ size = 38 }) => {
   const { themeMode, toggleTheme, colors } = useTheme();
-
   return (
     <Pressable
-      onPress={toggleTheme}   // ← direct ref, no wrapper lambda
+      onPress={toggleTheme}
+      hitSlop={8}
       style={({ pressed }) => [
-        styles.button,
+        styles.btn,
         {
-          backgroundColor: pressed ? colors.primaryLight : colors.surface,
+          width: size, height: size, borderRadius: size / 2,
+          backgroundColor: pressed ? colors.primaryLight : colors.inputBackground,
           borderColor: colors.border,
-          width: size,
-          height: size,
-          borderRadius: size / 2,
+          shadowColor: colors.shadow,
         },
       ]}
       accessibilityLabel={`Switch to ${themeMode === 'light' ? 'dark' : 'light'} mode`}
       accessibilityRole="button"
-      hitSlop={8}              // ← larger tap target, prevents missed taps
     >
-      <Text style={{ fontSize: size * 0.5 }}>
+      <Text style={{ fontSize: size * 0.44 }}>
         {themeMode === 'light' ? '🌙' : '☀️'}
       </Text>
     </Pressable>
@@ -31,14 +29,13 @@ const ThemeToggle: React.FC<ThemeToggleProps> = ({ size = 36 }) => {
 };
 
 const styles = StyleSheet.create({
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
+  btn: {
+    alignItems: 'center', justifyContent: 'center',
     borderWidth: 1,
     elevation: 2,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 3,
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 1,
+    shadowRadius: 6,
   },
 });
 

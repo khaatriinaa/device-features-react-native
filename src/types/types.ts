@@ -1,6 +1,7 @@
 export interface TravelEntry {
   id: string;
-  imageUri: string;
+  imageUri: string;          // primary image (cover) — kept for back-compat
+  imageUris: string[];       // all images including cover
   address: string;
   latitude: number;
   longitude: number;
@@ -33,7 +34,7 @@ export interface DiaryContextType {
 
 export interface ThemeContextType {
   themeMode: ThemeMode;
-  toggleTheme: () => void;   // ← sync, not async
+  toggleTheme: () => void;
   colors: ThemeColors;
 }
 

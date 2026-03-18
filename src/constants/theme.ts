@@ -1,38 +1,37 @@
 import { ThemeColors } from '../types/types';
 
 export const lightColors: ThemeColors = {
-  background: '#F5F7FA',
+  background: '#FFFFFF',
   surface: '#FFFFFF',
   card: '#FFFFFF',
-  text: '#1A1A2E',
+  text: '#1A1A1A',
   textSecondary: '#6B7280',
-  primary: '#4F46E5',
-  primaryLight: '#EEF2FF',
-  border: '#E5E7EB',
+  primary: '#F4622A',        // orange — the signature accent
+  primaryLight: '#FEF0EB',
+  border: '#EFEFEF',
   danger: '#EF4444',
-  placeholder: '#9CA3AF',
+  placeholder: '#AAAAAA',
   tabBar: '#FFFFFF',
-  tabBarBorder: '#E5E7EB',
-  shadow: 'rgba(0,0,0,0.1)',
-  inputBackground: '#F9FAFB',
+  tabBarBorder: '#EFEFEF',
+  shadow: 'rgba(0,0,0,0.10)',
+  inputBackground: '#F5F5F5',
 };
 
 export const darkColors: ThemeColors = {
-  background: '#0F0F1A',
-  surface: '#1A1A2E',
-  card: '#1E1E35',
-  text: '#F9FAFB',
-  textSecondary: '#9CA3AF',
-  primary: '#818CF8',
-  primaryLight: '#1E1B4B',
-  border: '#374151',
+  background: '#111111',
+  surface: '#1C1C1C',
+  card: '#1C1C1C',
+  text: '#F5F5F5',
+  textSecondary: '#888888',
+  primary: '#F4622A',
+  primaryLight: '#2A1A12',
+  border: '#2A2A2A',
   danger: '#F87171',
-  placeholder: '#6B7280',
-  tabBar: '#1A1A2E',
-  tabBarBorder: '#374151',
-  shadow: 'rgba(0,0,0,0.4)',
-  inputBackground: '#111827',
+  placeholder: '#555555',
+  tabBar: '#1C1C1C',
+  tabBarBorder: '#2A2A2A',
+  shadow: 'rgba(0,0,0,0.50)',
+  inputBackground: '#2A2A2A',
 };
 
-// Re-exported from AsyncStorage.tsx so the rest of the app can import from here
 export { STORAGE_KEY, THEME_STORAGE_KEY } from '../utils/AsyncStorage';
