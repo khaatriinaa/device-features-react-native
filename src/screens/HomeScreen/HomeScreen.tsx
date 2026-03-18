@@ -1,10 +1,11 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useState, useRef, useEffect } from 'react';
 import {
   View,
   Text,
   FlatList,
   RefreshControl,
   StatusBar,
+  InteractionManager,
 } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -21,26 +22,45 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
   const { entries, removeEntry, loadEntries } = useDiary();
   const { colors, themeMode } = useTheme();
   const [refreshing, setRefreshing] = useState(false);
+  const hasLoadedOnce = useRef(false);
 
-  // Reload entries every time this screen gains focus
   useFocusEffect(
     useCallback(() => {
-      loadEntries();
-    }, [])
+      if (hasLoadedOnce.current) return; // context already up-to-date after first load
+
+      // ✅ KEY FIX: Defer the state-setting load until AFTER the tab
+      // slide animation finishes. Without this, setState mid-animation
+      // causes the layout jump / flicker you see.
+      const task = InteractionManager.runAfterInteractions(() => {
+        loadEntries();
+        hasLoadedOnce.current = true;
+      });
+
+      return () => task.cancel(); // cleanup if screen blurs before task fires
+    }, [loadEntries])
   );
 
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
     await loadEntries();
     setRefreshing(false);
-  }, []);
+  }, [loadEntries]);
 
-  const renderItem = ({ item }: { item: TravelEntry }) => (
-    <EntryCard entry={item} onRemove={removeEntry} />
+  const renderItem = useCallback(
+    ({ item }: { item: TravelEntry }) => (
+      <EntryCard entry={item} onRemove={removeEntry} />
+    ),
+    [removeEntry]
   );
 
+  const keyExtractor = useCallback((item: TravelEntry) => item.id, []);
+
   return (
-    <SafeAreaView style={[styles.container, { backgroundColor: colors.background }]}>
+    // ✅ Use edges prop to avoid SafeAreaView conflicting with StatusBar on Android
+    <SafeAreaView
+      style={[styles.container, { backgroundColor: colors.background }]}
+      edges={['top', 'left', 'right']}
+    >
       <StatusBar
         barStyle={themeMode === 'dark' ? 'light-content' : 'dark-content'}
         backgroundColor={colors.background}
@@ -62,7 +82,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
       {/* ── List ── */}
       <FlatList
         data={entries}
-        keyExtractor={(item) => item.id}
+        keyExtractor={keyExtractor}
         renderItem={renderItem}
         contentContainerStyle={
           entries.length === 0 ? styles.emptyContainer : styles.listContent
@@ -77,6 +97,7 @@ const HomeScreen: React.FC<HomeScreenProps> = ({ navigation }) => {
           />
         }
         showsVerticalScrollIndicator={false}
+        removeClippedSubviews={false}
       />
     </SafeAreaView>
   );

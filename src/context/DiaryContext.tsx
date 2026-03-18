@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { DiaryContextType, TravelEntry } from '../types/types';
 import { STORAGE_KEY } from '../utils/AsyncStorage';
@@ -16,7 +16,7 @@ export const DiaryProvider: React.FC<DiaryProviderProps> = ({ children }) => {
     loadEntries();
   }, []);
 
-  const loadEntries = async (): Promise<void> => {
+  const loadEntries = useCallback(async (): Promise<void> => {
     try {
       const stored = await AsyncStorage.getItem(STORAGE_KEY);
       if (stored !== null) {
@@ -26,32 +26,47 @@ export const DiaryProvider: React.FC<DiaryProviderProps> = ({ children }) => {
     } catch (e) {
       console.log('Failed to load entries.');
     }
-  };
+  }, []);
 
-  const addEntry = async (entry: TravelEntry): Promise<void> => {
+  const addEntry = useCallback(async (entry: TravelEntry): Promise<void> => {
     try {
-      const updatedEntries = [entry, ...entries];
-      setEntries(updatedEntries);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
+      // Use functional updater to avoid stale closures
+      setEntries((prev) => {
+        const updatedEntries = [entry, ...prev];
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries)).catch(() =>
+          console.log('Failed to persist entry.')
+        );
+        return updatedEntries;
+      });
     } catch (e) {
       console.log('Failed to save entry.');
       throw e;
     }
-  };
+  }, []);
 
-  const removeEntry = async (id: string): Promise<void> => {
+  const removeEntry = useCallback(async (id: string): Promise<void> => {
     try {
-      const updatedEntries = entries.filter((e) => e.id !== id);
-      setEntries(updatedEntries);
-      await AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries));
+      setEntries((prev) => {
+        const updatedEntries = prev.filter((e) => e.id !== id);
+        AsyncStorage.setItem(STORAGE_KEY, JSON.stringify(updatedEntries)).catch(() =>
+          console.log('Failed to persist after removal.')
+        );
+        return updatedEntries;
+      });
     } catch (e) {
       console.log('Failed to remove entry.');
       throw e;
     }
-  };
+  }, []);
+
+  // Memoize context value — only changes when entries/callbacks change
+  const value = useMemo<DiaryContextType>(
+    () => ({ entries, addEntry, removeEntry, loadEntries }),
+    [entries, addEntry, removeEntry, loadEntries]
+  );
 
   return (
-    <DiaryContext.Provider value={{ entries, addEntry, removeEntry, loadEntries }}>
+    <DiaryContext.Provider value={value}>
       {children}
     </DiaryContext.Provider>
   );

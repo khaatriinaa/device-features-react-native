@@ -4,6 +4,10 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  // ✅ NEW: KeyboardAvoidingView needs its own flex:1 style
+  kavContainer: {
+    flex: 1,
+  },
   header: {
     flexDirection: 'row',
     justifyContent: 'space-between',

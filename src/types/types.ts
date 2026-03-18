@@ -33,7 +33,7 @@ export interface DiaryContextType {
 
 export interface ThemeContextType {
   themeMode: ThemeMode;
-  toggleTheme: () => void;
+  toggleTheme: () => void;   // ← sync, not async
   colors: ThemeColors;
 }
 
