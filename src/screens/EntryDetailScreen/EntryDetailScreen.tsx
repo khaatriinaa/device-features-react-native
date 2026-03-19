@@ -1,8 +1,9 @@
 import React, { useState, useRef } from 'react';
 import {
-  View, Text, Image, ScrollView, Pressable,
-  Alert, StatusBar, Dimensions, FlatList,
+  View, Text, Image, Pressable, StyleSheet,
+  Alert, StatusBar, Dimensions, FlatList, Animated,
 } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDiary } from '../../context/DiaryContext';
 import { useTheme } from '../../context/ThemeContext';
@@ -17,20 +18,25 @@ const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({ navigation, route
   const { colors } = useTheme();
   const insets = useSafeAreaInsets();
 
-  const [bookmarked, setBookmarked] = useState(false);
-  const [expanded,   setExpanded  ] = useState(false);
-  const [heroIndex,  setHeroIndex ] = useState(0);  // which image is shown as hero
+  const [expanded,  setExpanded ] = useState(false);
+  const [heroIndex, setHeroIndex] = useState(0);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
-  // All images (support old entries that only have imageUri)
   const allImages = entry.imageUris?.length ? entry.imageUris : [entry.imageUri];
 
-  // Address parsing
   const parts   = entry.address.split(',').map((s) => s.trim()).filter(Boolean);
   const city    = parts[1] || parts[0] || entry.address;
   const country = parts[parts.length - 2] || '';
   const tag     = (parts[2] || parts[1] || 'TRAVEL').toUpperCase().slice(0, 22);
 
-  // Time ago
+  // Formatted date
+  const createdDate = new Date(entry.createdAt).toLocaleDateString('en-US', {
+    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+  });
+  const createdTime = new Date(entry.createdAt).toLocaleTimeString('en-US', {
+    hour: '2-digit', minute: '2-digit',
+  });
+
   const timeAgo = (() => {
     const diff = Date.now() - new Date(entry.createdAt).getTime();
     const mins = Math.floor(diff / 60000);
@@ -56,47 +62,86 @@ const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({ navigation, route
   const isLong      = noteText.length > 180;
   const displayText = isLong && !expanded ? noteText.slice(0, 180) + '…' : noteText;
 
+  // Parallax: image moves at 0.4x scroll speed
+  const heroTranslateY = scrollY.interpolate({
+    inputRange: [-HERO_HEIGHT, 0, HERO_HEIGHT],
+    outputRange: [HERO_HEIGHT * 0.4, 0, -HERO_HEIGHT * 0.4],
+    extrapolate: 'clamp',
+  });
+  const heroScale = scrollY.interpolate({
+    inputRange: [-HERO_HEIGHT, 0],
+    outputRange: [1.3, 1],
+    extrapolate: 'clamp',
+  });
+
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-      <ScrollView
+      {/* ── FIXED HERO (position:absolute, behind scroll) ── */}
+      <View style={[styles.heroWrap, { height: HERO_HEIGHT }]}>
+        <Animated.Image
+          source={{ uri: allImages[heroIndex] }}
+          style={[styles.heroImage, { transform: [{ translateY: heroTranslateY }, { scale: heroScale }] }]}
+          resizeMode="cover"
+        />
+        <LinearGradient
+          colors={['rgba(0,0,0,0.35)', 'transparent', 'rgba(0,0,0,0.1)']}
+          style={StyleSheet.absoluteFillObject}
+        />
+        {allImages.length > 1 && (
+          <View style={styles.photoBadge}>
+            <Text style={styles.photoBadgeText}>{heroIndex + 1}/{allImages.length}</Text>
+          </View>
+        )}
+      </View>
+
+      {/*
+        ── HERO BUTTONS — rendered OUTSIDE heroWrap and ABOVE the ScrollView
+           so they are never blocked by the scroll container's touch area.
+           zIndex: 10 ensures they sit on top of everything.
+      */}
+      <SafeAreaView
+        style={[styles.heroButtons, { zIndex: 10 }]}
+        edges={['top']}
+        pointerEvents="box-none"
+      >
+        <Pressable
+          onPress={() => navigation.goBack()}
+          style={styles.heroBtn}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <Text style={styles.heroBtnText}>‹</Text>
+        </Pressable>
+        <Pressable
+          onPress={handleDelete}
+          style={[styles.heroBtn, { backgroundColor: 'rgba(239,68,68,0.75)' }]}
+          hitSlop={{ top: 12, bottom: 12, left: 12, right: 12 }}
+        >
+          <Text style={{ fontSize: 16 }}>🗑</Text>
+        </Pressable>
+      </SafeAreaView>
+
+      {/* ── SCROLLABLE SHEET (zIndex:1, above fixed hero) ── */}
+      <Animated.ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
         showsVerticalScrollIndicator={false}
         bounces
+        scrollEventThrottle={16}
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: true }
+        )}
       >
-        {/* ── Hero image ── */}
-        <View style={[styles.heroWrap, { height: HERO_HEIGHT }]}>
-          <Image
-            source={{ uri: allImages[heroIndex] }}
-            style={styles.heroImage}
-            resizeMode="cover"
-          />
+        {/* Transparent spacer — lets hero show through */}
+        <View style={{ height: HERO_HEIGHT - SHEET_OVERLAP }} pointerEvents="none" />
 
-          {/* Photo count badge */}
-          {allImages.length > 1 && (
-            <View style={styles.photoBadge}>
-              <Text style={styles.photoBadgeText}>{heroIndex + 1}/{allImages.length}</Text>
-            </View>
-          )}
-
-          {/* Back + bookmark */}
-          <SafeAreaView style={styles.heroButtons} edges={['top']}>
-            <Pressable onPress={() => navigation.goBack()} style={styles.heroBtn} hitSlop={8}>
-              <Text style={styles.heroBtnText}>‹</Text>
-            </Pressable>
-            <Pressable onPress={() => setBookmarked((b) => !b)} style={styles.heroBtn} hitSlop={8}>
-              <Text style={styles.heroBtnText}>{bookmarked ? '🔖' : '🏷️'}</Text>
-            </Pressable>
-          </SafeAreaView>
-        </View>
-
-        {/* ── White sheet ── */}
-        <View style={[styles.sheet, { backgroundColor: colors.surface, marginTop: -SHEET_OVERLAP }]}>
+        {/* Sheet content */}
+        <View style={[styles.sheet, { backgroundColor: colors.surface, minHeight: 600 }]}>
           <View style={[styles.pullBar, { backgroundColor: colors.border }]} />
 
-          {/* Photo strip — shown only if multiple images */}
+          {/* Photo strip */}
           {allImages.length > 1 && (
             <FlatList
               data={allImages}
@@ -120,20 +165,12 @@ const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({ navigation, route
             />
           )}
 
-          {/* Category tag */}
           <Text style={[styles.categoryTag, { color: colors.primary }]}>{tag}</Text>
-
-          {/* Title */}
-          <Text style={[styles.title, { color: colors.text }]}>
-            {entry.title || 'Travel Memory'}
-          </Text>
-
-          {/* City */}
+          <Text style={[styles.title, { color: colors.text }]}>{entry.title || 'Travel Memory'}</Text>
           <Text style={[styles.cityText, { color: colors.textSecondary }]}>
             {city}{country ? `, ${country}` : ''}
           </Text>
 
-          {/* Meta row */}
           <View style={styles.metaRow}>
             <View style={styles.metaItem}>
               <Text style={[styles.metaIcon, { color: colors.placeholder }]}>🕐</Text>
@@ -148,20 +185,37 @@ const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({ navigation, route
             </View>
           </View>
 
-          {/* Author row */}
-          <View style={[styles.authorRow, { borderTopColor: colors.border, borderBottomColor: colors.border }]}>
-            <View style={[styles.avatarCircle, { backgroundColor: colors.primaryLight }]}>
-              <Text style={styles.avatarEmoji}>🧳</Text>
+          {/*
+            ── ENTRY INFO CARD (replaces useless "Traveler" row) ──────────
+            Shows when the memory was recorded + photo count — actually useful.
+          */}
+          <View style={[styles.infoCard, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
+            <View style={styles.infoCardRow}>
+              <View style={styles.infoCardItem}>
+                <Text style={[styles.infoCardLabel, { color: colors.placeholder }]}>RECORDED ON</Text>
+                <Text style={[styles.infoCardValue, { color: colors.text }]}>{createdDate}</Text>
+                <Text style={[styles.infoCardSub, { color: colors.textSecondary }]}>{createdTime}</Text>
+              </View>
             </View>
-            <Text style={[styles.authorName, { color: colors.text }]}>Traveler</Text>
-            <Pressable onPress={handleDelete} style={[styles.deleteBtn, { backgroundColor: '#FEE2E2' }]}>
-              <Text style={[styles.deleteBtnText, { color: colors.danger }]}>🗑 Delete</Text>
-            </Pressable>
+            <View style={[styles.infoCardDivider, { backgroundColor: colors.border }]} />
+            <View style={styles.infoCardRow}>
+              <View style={styles.infoCardItem}>
+                <Text style={[styles.infoCardLabel, { color: colors.placeholder }]}>PHOTOS</Text>
+                <Text style={[styles.infoCardValue, { color: colors.text }]}>
+                  {allImages.length} {allImages.length === 1 ? 'photo' : 'photos'}
+                </Text>
+              </View>
+              <View style={[styles.infoCardVertDivider, { backgroundColor: colors.border }]} />
+              <View style={styles.infoCardItem}>
+                <Text style={[styles.infoCardLabel, { color: colors.placeholder }]}>ENTRY ID</Text>
+                <Text style={[styles.infoCardValue, { color: colors.text }]}>#{entry.id.slice(-6)}</Text>
+              </View>
+            </View>
           </View>
 
-          {/* About location */}
+          {/* About / notes */}
           <View style={styles.aboutSection}>
-            <Text style={[styles.aboutTitle, { color: colors.text }]}>About location</Text>
+            <Text style={[styles.aboutTitle, { color: colors.text }]}>Notes</Text>
             <Text style={[styles.aboutBody, { color: colors.textSecondary }]}>
               {displayText}
               {isLong && !expanded && (
@@ -181,9 +235,21 @@ const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({ navigation, route
             </Text>
           </View>
 
-          <View style={{ height: insets.bottom + 32 }} />
+          {/* Delete button at bottom */}
+          <Pressable
+            onPress={handleDelete}
+            style={({ pressed }) => [
+              styles.deleteFullBtn,
+              { backgroundColor: pressed ? '#FEE2E2' : '#FEF2F2', borderColor: '#FECACA' },
+            ]}
+          >
+            <Text style={{ fontSize: 16, marginRight: 6 }}>🗑</Text>
+            <Text style={[styles.deleteFullBtnText, { color: colors.danger }]}>Delete this memory</Text>
+          </Pressable>
+
+          <View style={{ height: insets.bottom + 24 }} />
         </View>
-      </ScrollView>
+      </Animated.ScrollView>
     </View>
   );
 };

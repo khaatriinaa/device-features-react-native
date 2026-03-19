@@ -183,7 +183,7 @@ const AddEntryScreen: React.FC<AddEntryScreenProps> = ({ navigation }) => {
             >
               <ScrollView
                 ref={scrollRef}
-                contentContainerStyle={[styles.scrollContent, { paddingBottom: 12 }]}
+                contentContainerStyle={[styles.scrollContent, { paddingBottom: 16 }]}
                 showsVerticalScrollIndicator={false}
                 keyboardShouldPersistTaps="handled"
                 keyboardDismissMode="interactive"
@@ -320,11 +320,7 @@ const AddEntryScreen: React.FC<AddEntryScreenProps> = ({ navigation }) => {
               </ScrollView>
             </KeyboardAvoidingView>
 
-            {/*
-              Bottom bar — OUTSIDE KAV.
-              Always pinned at the screen bottom. Never shifts. No gap.
-              insets.bottom handles the home indicator on iPhone.
-            */}
+            {/* Bottom bar — OUTSIDE KAV, always pinned */}
             <View
               style={[
                 styles.bottomBar,
@@ -335,27 +331,54 @@ const AddEntryScreen: React.FC<AddEntryScreenProps> = ({ navigation }) => {
                 },
               ]}
             >
-              <View style={[styles.authorAvatar, { backgroundColor: colors.primaryLight }]}>
-                <Text style={styles.authorAvatarText}>🧳</Text>
+              {/* Status hint — tells the user what is still needed */}
+              <View style={{ flex: 1, justifyContent: 'center', gap: 2 }}>
+                <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text }}>
+                  Ready to save?
+                </Text>
+                <Text style={{ fontSize: 11, color: colors.textSecondary }}>
+                  {!coverUri
+                    ? '📷 Add a cover photo'
+                    : !address
+                    ? '📍 Detecting location…'
+                    : !isValid
+                    ? '✏️ Fill in the title'
+                    : '✅ All set — tap Save!'}
+                </Text>
               </View>
-              <Text style={[styles.authorLabel, { color: colors.textSecondary }]}>Traveler</Text>
+
               <Pressable
                 onPress={() => handleSubmit()}
-                disabled={saving || !isValid || !coverUri}
+                disabled={saving || !isValid || !coverUri || !address}
                 style={({ pressed }) => [
                   styles.saveBtn,
                   {
                     backgroundColor:
-                      saving || !isValid || !coverUri
-                        ? colors.placeholder
-                        : pressed ? '#C94E20' : colors.primary,
-                    shadowColor: colors.primary,
+                      saving || !isValid || !coverUri || !address
+                        ? colors.border
+                        : pressed
+                        ? '#C94E20'
+                        : colors.primary,
+                    elevation: saving || !isValid || !coverUri || !address ? 0 : 4,
+                    shadowOpacity: saving || !isValid || !coverUri || !address ? 0 : 0.25,
+                    shadowColor: '#000',
+                    shadowOffset: { width: 0, height: 2 },
+                    shadowRadius: 6,
                   },
                 ]}
               >
                 {saving
                   ? <ActivityIndicator color="#fff" size="small" />
-                  : <Text style={styles.saveBtnText}>Save</Text>
+                  : <Text style={[
+                      styles.saveBtnText,
+                      {
+                        color: saving || !isValid || !coverUri || !address
+                          ? colors.textSecondary
+                          : '#fff',
+                      },
+                    ]}>
+                      Save
+                    </Text>
                 }
               </Pressable>
             </View>

@@ -2,28 +2,36 @@ import { StyleSheet, Dimensions } from 'react-native';
 
 const { width: SCREEN_W, height: SCREEN_H } = Dimensions.get('window');
 
-export const HERO_HEIGHT  = SCREEN_H * 0.42;
-export const SHEET_OVERLAP = 28;
+export const HERO_HEIGHT   = SCREEN_H * 0.44;
+export const SHEET_OVERLAP = 32;
 
 const styles = StyleSheet.create({
   root: { flex: 1 },
-  scroll: { flex: 1 },
-  scrollContent: { flexGrow: 1 },
 
-  // ── Hero ──────────────────────────────────────────────────────────────────
-  heroWrap: { width: SCREEN_W, overflow: 'hidden' },
-  heroImage: { width: '100%', height: '100%' },
+  // ── Fixed hero — position absolute, behind everything ────────────────────
+  heroWrap: {
+    position: 'absolute',
+    top: 0, left: 0, right: 0,
+    overflow: 'hidden',
+    zIndex: 0,
+  },
+  heroImage: {
+    width: SCREEN_W,
+    height: HERO_HEIGHT,
+  },
   photoBadge: {
     position: 'absolute',
     bottom: SHEET_OVERLAP + 12,
     right: 16,
     backgroundColor: 'rgba(0,0,0,0.5)',
-    paddingHorizontal: 10,
-    paddingVertical: 4,
+    paddingHorizontal: 10, paddingVertical: 4,
     borderRadius: 20,
   },
   photoBadgeText: { color: '#fff', fontSize: 12, fontWeight: '600' },
 
+  // ── Hero buttons — position absolute, OUTSIDE scroll, zIndex:10 ──────────
+  // Rendered as a sibling of ScrollView (not inside heroWrap) so they are
+  // never blocked by the scroll container's touch area.
   heroButtons: {
     position: 'absolute',
     top: 0, left: 0, right: 0,
@@ -31,17 +39,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingHorizontal: 16,
     paddingBottom: 8,
+    zIndex: 10,
   },
   heroBtn: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: 'rgba(0,0,0,0.38)',
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: 'rgba(0,0,0,0.42)',
     alignItems: 'center', justifyContent: 'center',
   },
-  heroBtnText: { color: '#fff', fontSize: 20, fontWeight: '600', lineHeight: 26 },
+  heroBtnText: { color: '#fff', fontSize: 22, fontWeight: '600', lineHeight: 28 },
+
+  // ── Scrollable area ───────────────────────────────────────────────────────
+  scroll: {
+    flex: 1,
+    zIndex: 1,
+  },
+  scrollContent: { flexGrow: 1 },
 
   // ── Sheet ─────────────────────────────────────────────────────────────────
   sheet: {
-    flex: 1,
     borderTopLeftRadius: 28,
     borderTopRightRadius: 28,
     paddingHorizontal: 20,
@@ -61,8 +76,7 @@ const styles = StyleSheet.create({
   photoStrip: { marginBottom: 16 },
   stripContent: { gap: 8, paddingRight: 4 },
   stripThumb: {
-    width: 64,
-    height: 64,
+    width: 64, height: 64,
     borderRadius: 10,
     borderWidth: 2,
     borderColor: 'transparent',
@@ -86,34 +100,60 @@ const styles = StyleSheet.create({
   metaText: { fontSize: 12, fontWeight: '500' },
   metaDot: { width: 4, height: 4, borderRadius: 2 },
 
-  // ── Author ────────────────────────────────────────────────────────────────
-  authorRow: {
-    flexDirection: 'row', alignItems: 'center',
+  // ── Entry info card (replaces "Traveler" row) ─────────────────────────────
+  infoCard: {
+    borderRadius: 16,
+    borderWidth: 1,
+    marginBottom: 22,
+    overflow: 'hidden',
+  },
+  infoCardRow: {
+    flexDirection: 'row',
+    paddingHorizontal: 16,
     paddingVertical: 14,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    marginBottom: 22, gap: 12,
   },
-  avatarCircle: {
-    width: 44, height: 44, borderRadius: 22,
-    alignItems: 'center', justifyContent: 'center',
+  infoCardItem: { flex: 1 },
+  infoCardLabel: {
+    fontSize: 9, fontWeight: '800',
+    letterSpacing: 1.2, textTransform: 'uppercase',
+    marginBottom: 4,
   },
-  avatarEmoji: { fontSize: 22 },
-  authorName: { flex: 1, fontSize: 15, fontWeight: '700' },
-  deleteBtn: { paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
-  deleteBtnText: { fontSize: 13, fontWeight: '700' },
+  infoCardValue: { fontSize: 14, fontWeight: '700', lineHeight: 18 },
+  infoCardSub: { fontSize: 12, marginTop: 2 },
+  infoCardDivider: { height: StyleSheet.hairlineWidth, marginHorizontal: 0 },
+  infoCardVertDivider: { width: StyleSheet.hairlineWidth, marginVertical: 2 },
 
-  // ── About ─────────────────────────────────────────────────────────────────
+  // ── About / notes ─────────────────────────────────────────────────────────
   aboutSection: { marginBottom: 22 },
   aboutTitle: { fontSize: 17, fontWeight: '800', marginBottom: 10, letterSpacing: -0.2 },
   aboutBody: { fontSize: 14, lineHeight: 22, letterSpacing: 0.1 },
   readMore: { fontWeight: '700', fontSize: 14 },
 
   // ── Address block ─────────────────────────────────────────────────────────
-  addressBlock: { borderRadius: 16, borderWidth: 1, padding: 16, gap: 4, marginBottom: 8 },
-  addressBlockLabel: { fontSize: 11, fontWeight: '800', textTransform: 'uppercase', letterSpacing: 1 },
+  addressBlock: {
+    borderRadius: 16, borderWidth: 1,
+    padding: 16, gap: 4, marginBottom: 16,
+  },
+  addressBlockLabel: {
+    fontSize: 11, fontWeight: '800',
+    textTransform: 'uppercase', letterSpacing: 1,
+  },
   addressBlockText: { fontSize: 14, fontWeight: '600', lineHeight: 20 },
   addressCoords: { fontSize: 11, fontFamily: 'monospace', marginTop: 2 },
+
+  // ── Delete button at bottom ───────────────────────────────────────────────
+  deleteFullBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: 14,
+    borderRadius: 14,
+    borderWidth: 1,
+    marginBottom: 8,
+  },
+  deleteFullBtnText: {
+    fontSize: 15, fontWeight: '700',
+  },
 });
 
 export default styles;

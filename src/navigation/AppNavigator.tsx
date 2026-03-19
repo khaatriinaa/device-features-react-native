@@ -13,55 +13,80 @@ const Stack = createStackNavigator<RootStackParamList>();
 
 // ── Tab icon ──────────────────────────────────────────────────────────────────
 const TabIcon: React.FC<{ emoji: string; label: string; focused: boolean }> = ({ emoji, label, focused }) => {
-  const { colors } = useTheme();
+  const { colors, themeMode } = useTheme();
+  // In dark mode: focused = orange, inactive = white
+  // In light mode: focused = orange, inactive = gray
+  const activeColor   = colors.primary;
+  const inactiveColor = themeMode === 'dark' ? '#FFFFFF' : colors.placeholder;
+  const iconColor     = focused ? activeColor : inactiveColor;
+
   return (
     <View style={tabStyles.container}>
-      <Text style={[tabStyles.emoji, { opacity: focused ? 1 : 0.4 }]}>{emoji}</Text>
-      <Text style={[tabStyles.label, { color: focused ? colors.primary : colors.placeholder }]}>
-        {label}
-      </Text>
+      <Text style={[tabStyles.emoji, { color: iconColor }]}>{emoji}</Text>
+      <Text style={[tabStyles.label, { color: iconColor }]}>{label}</Text>
     </View>
   );
 };
 
 // ── Bottom tab navigator ───────────────────────────────────────────────────────
 const TabNavigator: React.FC = () => {
-  const { colors } = useTheme();
+  const { colors, themeMode } = useTheme();
+
   return (
     <Tab.Navigator
       screenOptions={{
         headerShown: false,
+        tabBarShowLabel: false,
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.placeholder,
         tabBarStyle: {
+          // Explicit solid background — no transparency
           backgroundColor: colors.tabBar,
           borderTopColor: colors.tabBarBorder,
-          borderTopWidth: 1,
+          borderTopWidth: StyleSheet.hairlineWidth,
           height: Platform.OS === 'ios' ? 88 : 68,
           paddingBottom: Platform.OS === 'ios' ? 24 : 10,
           paddingTop: 10,
-          elevation: 10,
-          shadowColor: '#000',
+          // Elevation/shadow
+          elevation: 8,
+          shadowColor: themeMode === 'dark' ? '#000' : '#00000020',
           shadowOffset: { width: 0, height: -2 },
-          shadowOpacity: 0.08,
+          shadowOpacity: themeMode === 'dark' ? 0.6 : 0.08,
           shadowRadius: 8,
         },
-        tabBarShowLabel: false,
+        // CRITICAL: forces the navigator's internal background to match
+        // instead of letting the OS render its own translucent bar
+        tabBarBackground: () => (
+          <View
+            style={{
+              flex: 1,
+              backgroundColor: colors.tabBar,
+              borderTopWidth: StyleSheet.hairlineWidth,
+              borderTopColor: colors.tabBarBorder,
+            }}
+          />
+        ),
       }}
     >
       <Tab.Screen
         name="Home"
         component={HomeScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="⌂" label="Home" focused={focused} /> }}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon emoji="⌂" label="Home" focused={focused} />,
+        }}
       />
       <Tab.Screen
         name="AddEntry"
         component={AddEntryScreen}
-        options={{ tabBarIcon: ({ focused }) => <TabIcon emoji="＋" label="Add" focused={focused} /> }}
+        options={{
+          tabBarIcon: ({ focused }) => <TabIcon emoji="＋" label="Add" focused={focused} />,
+        }}
       />
     </Tab.Navigator>
   );
 };
 
-// ── Root stack — wraps tabs + detail screen ────────────────────────────────────
+// ── Root stack ────────────────────────────────────────────────────────────────
 const AppNavigator: React.FC = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
@@ -70,7 +95,6 @@ const AppNavigator: React.FC = () => {
         name="EntryDetail"
         component={EntryDetailScreen}
         options={{
-          // Slide up from bottom like a modal sheet
           presentation: 'card',
           cardStyleInterpolator: ({ current, layouts }) => ({
             cardStyle: {
@@ -92,8 +116,8 @@ const AppNavigator: React.FC = () => {
 
 const tabStyles = StyleSheet.create({
   container: { alignItems: 'center', gap: 2 },
-  emoji: { fontSize: 21 },
-  label: { fontSize: 10, fontWeight: '600' },
+  emoji:     { fontSize: 21 },
+  label:     { fontSize: 10, fontWeight: '600' },
 });
 
 export default AppNavigator;
