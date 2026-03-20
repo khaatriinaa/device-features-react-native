@@ -1,8 +1,5 @@
 import React, { useState, useRef } from 'react';
-import {
-  View, Text, Image, Pressable, StyleSheet,
-  Alert, StatusBar, Dimensions, FlatList, Animated,
-} from 'react-native';
+import { View, Text, Image, Pressable, StyleSheet, Alert, StatusBar, Dimensions, FlatList, Animated } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useDiary } from '../../context/DiaryContext';
@@ -78,7 +75,7 @@ const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({ navigation, route
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <StatusBar barStyle="light-content" backgroundColor="transparent" translucent />
 
-      {/* ── FIXED HERO (position:absolute, behind scroll) ── */}
+      {/* ── FIXED HERO ── */}
       <View style={[styles.heroWrap, { height: HERO_HEIGHT }]}>
         <Animated.Image
           source={{ uri: allImages[heroIndex] }}
@@ -96,11 +93,7 @@ const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({ navigation, route
         )}
       </View>
 
-      {/*
-        ── HERO BUTTONS — rendered OUTSIDE heroWrap and ABOVE the ScrollView
-           so they are never blocked by the scroll container's touch area.
-           zIndex: 10 ensures they sit on top of everything.
-      */}
+      {/* ─ HERO BUTTONS — */}
       <SafeAreaView
         style={[styles.heroButtons, { zIndex: 10 }]}
         edges={['top']}
@@ -122,7 +115,7 @@ const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({ navigation, route
         </Pressable>
       </SafeAreaView>
 
-      {/* ── SCROLLABLE SHEET (zIndex:1, above fixed hero) ── */}
+      {/* ── SCROLLABLE SHEET ── */}
       <Animated.ScrollView
         style={styles.scroll}
         contentContainerStyle={styles.scrollContent}
@@ -134,7 +127,7 @@ const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({ navigation, route
           { useNativeDriver: true }
         )}
       >
-        {/* Transparent spacer — lets hero show through */}
+        {/* Transparent spacer */}
         <View style={{ height: HERO_HEIGHT - SHEET_OVERLAP }} pointerEvents="none" />
 
         {/* Sheet content */}
@@ -185,10 +178,7 @@ const EntryDetailScreen: React.FC<EntryDetailScreenProps> = ({ navigation, route
             </View>
           </View>
 
-          {/*
-            ── ENTRY INFO CARD (replaces useless "Traveler" row) ──────────
-            Shows when the memory was recorded + photo count — actually useful.
-          */}
+          {/* ── ENTRY INFO CARD ── */}
           <View style={[styles.infoCard, { backgroundColor: colors.inputBackground, borderColor: colors.border }]}>
             <View style={styles.infoCardRow}>
               <View style={styles.infoCardItem}>

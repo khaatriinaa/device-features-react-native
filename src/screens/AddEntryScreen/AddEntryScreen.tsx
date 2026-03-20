@@ -1,9 +1,5 @@
 import React, { useState, useCallback, useRef } from 'react';
-import {
-  View, Text, Image, ScrollView, Alert, Pressable,
-  TextInput, ActivityIndicator, StatusBar,
-  KeyboardAvoidingView, Platform,
-} from 'react-native';
+import { View, Text, Image, ScrollView, Alert, Pressable, TextInput, ActivityIndicator, StatusBar, KeyboardAvoidingView, Platform } from 'react-native';
 import { useFocusEffect } from '@react-navigation/native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import * as ImagePicker from 'expo-image-picker';
@@ -169,13 +165,6 @@ const AddEntryScreen: React.FC<AddEntryScreenProps> = ({ navigation }) => {
       >
         {({ handleChange, handleBlur, handleSubmit, values, errors, touched, isValid }) => (
           <>
-            {/*
-              KAV wraps ONLY the ScrollView — not the bottom bar.
-              This means:
-                - Keyboard open → KAV shrinks the scroll area only
-                - The focused field scrolls into view via onFocus → scrollToY
-                - Save button stays pinned at the bottom, never moves, no gap
-            */}
             <KeyboardAvoidingView
               style={{ flex: 1 }}
               behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
@@ -202,7 +191,7 @@ const AddEntryScreen: React.FC<AddEntryScreenProps> = ({ navigation }) => {
                     <View style={styles.coverPlaceholder}>
                       <Text style={styles.coverIcon}>📷</Text>
                       <Text style={[styles.coverText, { color: colors.placeholder }]}>
-                        Add cover photo (tap here)
+                        Add a photo (tap here)
                       </Text>
                     </View>
                   )}
@@ -320,7 +309,7 @@ const AddEntryScreen: React.FC<AddEntryScreenProps> = ({ navigation }) => {
               </ScrollView>
             </KeyboardAvoidingView>
 
-            {/* Bottom bar — OUTSIDE KAV, always pinned */}
+            {/* Bottom bar */}
             <View
               style={[
                 styles.bottomBar,
@@ -331,14 +320,14 @@ const AddEntryScreen: React.FC<AddEntryScreenProps> = ({ navigation }) => {
                 },
               ]}
             >
-              {/* Status hint — tells the user what is still needed */}
+              {/* Status hint */}
               <View style={{ flex: 1, justifyContent: 'center', gap: 2 }}>
                 <Text style={{ fontSize: 12, fontWeight: '700', color: colors.text }}>
                   Ready to save?
                 </Text>
                 <Text style={{ fontSize: 11, color: colors.textSecondary }}>
                   {!coverUri
-                    ? '📷 Add a cover photo'
+                    ? '📷 Add a photo'
                     : !address
                     ? '📍 Detecting location…'
                     : !isValid

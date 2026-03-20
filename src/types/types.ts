@@ -1,7 +1,7 @@
 export interface TravelEntry {
   id: string;
-  imageUri: string;          // primary image (cover) — kept for back-compat
-  imageUris: string[];       // all images including cover
+  imageUri: string;
+  imageUris: string[]; 
   address: string;
   latitude: number;
   longitude: number;

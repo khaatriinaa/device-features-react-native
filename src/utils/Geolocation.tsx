@@ -1,6 +1,5 @@
-// npx expo install expo-location
 import React, { useState, useEffect } from 'react';
-import { View, Text, Button, StyleSheet } from 'react-native';
+import { View, Text, Button, StyleSheet, Alert, Linking } from 'react-native';
 import * as Location from 'expo-location';
 
 interface LocationCoords {
@@ -11,7 +10,7 @@ interface LocationCoords {
 export default function GeolocationScreen() {
   const [location, setLocation] = useState<LocationCoords | null>(null);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const [address, setAddress] = useState<string>('');
+  const [address, setAddress]   = useState<string>('');
 
   useEffect(() => {
     requestPermissions();
@@ -30,7 +29,7 @@ export default function GeolocationScreen() {
         accuracy: Location.Accuracy.BestForNavigation,
       });
       setLocation({
-        latitude: locationData.coords.latitude,
+        latitude:  locationData.coords.latitude,
         longitude: locationData.coords.longitude,
       });
     } catch (error) {
@@ -42,23 +41,23 @@ export default function GeolocationScreen() {
   const getAddress = async () => {
     if (!location) return;
     const addressResult = await Location.reverseGeocodeAsync({
-      latitude: location.latitude,
+      latitude:  location.latitude,
       longitude: location.longitude,
     });
     setAddress(
       formatAddress(
-        addressResult[0].name ?? '',
-        addressResult[0].city ?? '',
-        addressResult[0].region ?? '',
+        addressResult[0].name       ?? '',
+        addressResult[0].city       ?? '',
+        addressResult[0].region     ?? '',
         addressResult[0].postalCode ?? ''
       )
     );
   };
 
   function formatAddress(
-    name: string,
-    city: string,
-    region: string,
+    name:       string,
+    city:       string,
+    region:     string,
     postalCode: string
   ): string {
     return name + ', ' + city + ', ' + region + ' ' + postalCode;
@@ -67,8 +66,8 @@ export default function GeolocationScreen() {
   return (
     <View style={styles.container}>
       <Button title="Get Current Location" onPress={getCurrentLocation} />
-      <Button title="Get Address" onPress={getAddress} />
-      {errorMsg ? <Text style={styles.error}>{errorMsg}</Text> : null}
+      <Button title="Get Address"          onPress={getAddress} />
+      {errorMsg && <Text style={styles.error}>{errorMsg}</Text>}
       {location && (
         <Text style={styles.text}>
           Latitude: {location.latitude} | Longitude: {location.longitude}
@@ -79,23 +78,47 @@ export default function GeolocationScreen() {
   );
 }
 
-// ─── Exported Helpers (used by AddEntryScreen) ────────────────────────────────
+// ─── Exported Helpers (used by AddEntryScreen) ──── //
+export const requestLocationAndGetCoords =
+  async (): Promise<LocationCoords> => {
+    // Check current status first
+    const { status: currentStatus } =
+      await Location.getForegroundPermissionsAsync();
 
-/**
- * Request location permissions and get current GPS coordinates.
- * Uses BestForNavigation accuracy for real-time, constantly moving use cases.
- */
-export const requestLocationAndGetCoords = async (): Promise<LocationCoords> => {
-  const { status } = await Location.requestForegroundPermissionsAsync();
-  if (status !== 'granted') {
+    if (currentStatus === 'granted') {
+      // Already granted — get coords directly
+      return await getCurrentCoords();
+    }
+
+    if (currentStatus === 'undetermined') {
+      // First time — show native dialog
+      const { status: newStatus } =
+        await Location.requestForegroundPermissionsAsync();
+
+      if (newStatus === 'granted') return await getCurrentCoords();
+
+      throw new Error('Permission to access location was denied.');
+    }
+
+    // Previously denied — guide to Settings
+    Alert.alert(
+      'Location Permission Required',
+      'WANDR needs location access to tag your travel entries.\n\nPlease go to Settings → Privacy → Location and enable access for this app.',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Open Settings', onPress: () => Linking.openSettings() },
+      ]
+    );
     throw new Error('Permission to access location was denied.');
-  }
+  };
+
+const getCurrentCoords = async (): Promise<LocationCoords> => {
   try {
     const locationData = await Location.getCurrentPositionAsync({
-      accuracy: Location.Accuracy.BestForNavigation, // real-time, constantly moving
+      accuracy: Location.Accuracy.BestForNavigation,
     });
     return {
-      latitude: locationData.coords.latitude,
+      latitude:  locationData.coords.latitude,
       longitude: locationData.coords.longitude,
     };
   } catch (error) {
@@ -104,21 +127,22 @@ export const requestLocationAndGetCoords = async (): Promise<LocationCoords> => 
   }
 };
 
-/**
- * Reverse geocode latitude/longitude to a human-readable address.
- */
+/* Reverse geocode latitude/longitude to a human-readable address. */
 export const getAddressFromCoords = async (
-  latitude: number,
+  latitude:  number,
   longitude: number
 ): Promise<string> => {
   try {
-    const addressResult = await Location.reverseGeocodeAsync({ latitude, longitude });
+    const addressResult = await Location.reverseGeocodeAsync({
+      latitude,
+      longitude,
+    });
     if (addressResult.length > 0) {
       const r = addressResult[0];
       return formatAddressHelper(
-        r.name ?? '',
-        r.city ?? '',
-        r.region ?? '',
+        r.name       ?? '',
+        r.city       ?? '',
+        r.region     ?? '',
         r.postalCode ?? ''
       );
     }
@@ -130,9 +154,9 @@ export const getAddressFromCoords = async (
 };
 
 function formatAddressHelper(
-  name: string,
-  city: string,
-  region: string,
+  name:       string,
+  city:       string,
+  region:     string,
   postalCode: string
 ): string {
   return name + ', ' + city + ', ' + region + ' ' + postalCode;

@@ -1,17 +1,14 @@
-// npm install @react-native-async-storage/async-storage
 import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, Button, StyleSheet } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-// ─── Storage Keys ─────────────────────────────────────────────────────────────
+// ─── Storage Keys ──── //
 export const STORAGE_KEY = '@travel_diary_entries';
 export const THEME_STORAGE_KEY = '@travel_diary_theme';
 
-// ─── AsyncStorage Helper Functions ───────────────────────────────────────────
+// ─── AsyncStorage Helper Functions ─── //
 
-/**
- * Get a value from AsyncStorage by key.
- */
+/* Get a value from AsyncStorage by key. */
 export const getItem = async (key: string): Promise<string | null> => {
   try {
     const value = await AsyncStorage.getItem(key);
@@ -25,9 +22,7 @@ export const getItem = async (key: string): Promise<string | null> => {
   }
 };
 
-/**
- * Set a value in AsyncStorage by key.
- */
+/* Set a value in AsyncStorage by key. */
 export const setItem = async (key: string, value: string): Promise<void> => {
   try {
     await AsyncStorage.setItem(key, value);
@@ -36,9 +31,7 @@ export const setItem = async (key: string, value: string): Promise<void> => {
   }
 };
 
-/**
- * Remove a value from AsyncStorage by key.
- */
+/** Remove a value from AsyncStorage by key. */
 export const removeItem = async (key: string): Promise<void> => {
   try {
     await AsyncStorage.removeItem(key);
@@ -47,7 +40,7 @@ export const removeItem = async (key: string): Promise<void> => {
   }
 };
 
-// ─── AsyncStorageTest Component (for reference/testing) ──────────────────────
+// ─── AsyncStorageTest Component (for reference/testing) ──── //
 const AsyncStorageTest = () => {
   const [name, setName] = useState('');
   const [storedName, setStoredName] = useState('');

@@ -3,7 +3,7 @@ import { StackNavigationProp } from '@react-navigation/stack';
 import { RouteProp } from '@react-navigation/native';
 import { TravelEntry } from './types';
 
-// ── Bottom tab navigator ───────────────────────────────────────────────────
+// ── Bottom tab navigator ─── //
 export type TabParamList = {
   Home: undefined;
   AddEntry: undefined;
@@ -15,7 +15,7 @@ export interface HomeScreenProps { navigation: HomeScreenNavigationProp; }
 export type AddEntryScreenNavigationProp = BottomTabNavigationProp<TabParamList, 'AddEntry'>;
 export interface AddEntryScreenProps { navigation: AddEntryScreenNavigationProp; }
 
-// ── Root stack navigator (wraps the tab navigator) ─────────────────────────
+// ── Root stack navigator ─── //
 export type RootStackParamList = {
   Main: undefined;
   EntryDetail: { entry: TravelEntry };
@@ -29,7 +29,7 @@ export interface EntryDetailScreenProps {
   route: EntryDetailScreenRouteProp;
 }
 
-// ── Component props ────────────────────────────────────────────────────────
+// ── Component props ─── //
 export interface EntryCardProps {
   entry: TravelEntry;
   onRemove: (id: string) => void;

@@ -1,10 +1,5 @@
 import React, { useCallback, useState, useRef, useEffect } from 'react';
-import {
-  View, Text, FlatList, RefreshControl, StatusBar,
-  InteractionManager, Pressable, Alert, Image,
-  Animated, Dimensions, TouchableWithoutFeedback,
-  Switch,
-} from 'react-native';
+import { View, Text, FlatList, RefreshControl, StatusBar, InteractionManager, Pressable, Alert, Image, Animated, Dimensions, TouchableWithoutFeedback, Switch } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useFocusEffect, useNavigation } from '@react-navigation/native';
 import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -18,7 +13,7 @@ import styles from './HomeScreen.styles';
 const { width: SCREEN_W } = Dimensions.get('window');
 const DRAWER_WIDTH = SCREEN_W * 0.72;
 
-// ── Drawer Menu ───────────────────────────────────────────────────────────────
+// ── Drawer Menu ─── //
 const DrawerMenu: React.FC<{
   visible: boolean;
   onClose: () => void;
@@ -211,7 +206,7 @@ const DrawerMenu: React.FC<{
   );
 };
 
-// ── Featured card ─────────────────────────────────────────────────────────────
+// ── Featured card ─── //
 const FeaturedCard: React.FC<{
   entry: TravelEntry;
   onRemove: (id: string) => void;
@@ -273,7 +268,7 @@ const FeaturedCard: React.FC<{
   );
 };
 
-// ── Row card ──────────────────────────────────────────────────────────────────
+// ── Row card ─── //
 const RowCard: React.FC<{
   entry: TravelEntry;
   onRemove: (id: string) => void;
@@ -327,7 +322,7 @@ const RowCard: React.FC<{
   );
 };
 
-// ── HomeScreen ────────────────────────────────────────────────────────────────
+// ── HomeScreen ── //
 const HomeScreen: React.FC<HomeScreenProps> = () => {
   const { entries, removeEntry, loadEntries } = useDiary();
   const { colors, themeMode, toggleTheme } = useTheme();

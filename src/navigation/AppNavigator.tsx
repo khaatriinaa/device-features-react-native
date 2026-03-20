@@ -11,11 +11,8 @@ import EntryDetailScreen from '../screens/EntryDetailScreen/EntryDetailScreen';
 const Tab   = createBottomTabNavigator<TabParamList>();
 const Stack = createStackNavigator<RootStackParamList>();
 
-// ── Tab icon ──────────────────────────────────────────────────────────────────
 const TabIcon: React.FC<{ emoji: string; label: string; focused: boolean }> = ({ emoji, label, focused }) => {
   const { colors, themeMode } = useTheme();
-  // In dark mode: focused = orange, inactive = white
-  // In light mode: focused = orange, inactive = gray
   const activeColor   = colors.primary;
   const inactiveColor = themeMode === 'dark' ? '#FFFFFF' : colors.placeholder;
   const iconColor     = focused ? activeColor : inactiveColor;
@@ -28,7 +25,6 @@ const TabIcon: React.FC<{ emoji: string; label: string; focused: boolean }> = ({
   );
 };
 
-// ── Bottom tab navigator ───────────────────────────────────────────────────────
 const TabNavigator: React.FC = () => {
   const { colors, themeMode } = useTheme();
 
@@ -54,8 +50,7 @@ const TabNavigator: React.FC = () => {
           shadowOpacity: themeMode === 'dark' ? 0.6 : 0.08,
           shadowRadius: 8,
         },
-        // CRITICAL: forces the navigator's internal background to match
-        // instead of letting the OS render its own translucent bar
+
         tabBarBackground: () => (
           <View
             style={{
@@ -86,7 +81,6 @@ const TabNavigator: React.FC = () => {
   );
 };
 
-// ── Root stack ────────────────────────────────────────────────────────────────
 const AppNavigator: React.FC = () => {
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>

@@ -28,7 +28,6 @@ export const darkColors: ThemeColors = {
   border:          '#2A2A2A',
   danger:          '#F87171',
   placeholder:     '#555555',
-  // Explicit solid dark color — no transparency that bleeds light through
   tabBar:          '#1C1C1C',
   tabBarBorder:    '#2A2A2A',
   shadow:          'rgba(0,0,0,0.50)',

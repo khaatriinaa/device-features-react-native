@@ -1,12 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useState,
-  useEffect,
-  ReactNode,
-  useMemo,
-  useCallback,
-} from 'react';
+import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { ThemeContextType, ThemeMode } from '../types/types';
 import { lightColors, darkColors } from '../constants/theme';
@@ -37,7 +29,7 @@ export const ThemeProvider: React.FC<ThemeProviderProps> = ({ children }) => {
       );
       return next;
     });
-  }, []); // ← empty deps: this function never changes
+  }, []); 
 
   const colors = useMemo(
     () => (themeMode === 'light' ? lightColors : darkColors),

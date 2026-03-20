@@ -3,10 +3,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { TravelEntry } from '../types/types';
 import { STORAGE_KEY } from '../utils/AsyncStorage';
 
-/**
- * Custom hook that manages travel diary entries with AsyncStorage.
- * Uses the same async/await + try/catch pattern as AsyncStorageTest.
- */
 const useTravelEntries = () => {
   const [entries, setEntries] = useState<TravelEntry[]>([]);
   const [loading, setLoading] = useState(true);
